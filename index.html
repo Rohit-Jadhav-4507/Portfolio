@@ -1,1 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rohit Jadhav — Robotics & AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Lora:ital@1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#080b12;--bg2:#0d1017;--card:#111520;--border:#1c2133;
+  --accent:#00d4ff;--accent2:#7b61ff;--green:#00ff9d;
+  --text:#dde2ee;--muted:#52596b;--light:#8b95a8;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;overflow-x:hidden;}
 
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:18px 56px;transition:all .3s;}
+nav.scrolled{background:rgba(8,11,18,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--accent);letter-spacing:3px;}
+.nav-links{display:flex;gap:36px;list-style:none;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.65rem;letter-spacing:2px;text-transform:uppercase;transition:color .2s;}
+.nav-links a:hover{color:var(--accent);}
+
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;padding:120px 56px 80px;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(0,212,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.04) 1px,transparent 1px);background-size:56px 56px;animation:bgscroll 18s linear infinite;pointer-events:none;}
+@keyframes bgscroll{to{background-position:0 56px;}}
+.hero-ga{position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,.09),transparent 70%);top:5%;right:5%;pointer-events:none;animation:breathe 5s ease-in-out infinite;}
+.hero-gb{position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(123,97,255,.07),transparent 70%);bottom:10%;left:0;pointer-events:none;animation:breathe 6s ease-in-out infinite reverse;}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.7;}50%{transform:scale(1.12);opacity:1;}}
+
+#robotCanvas{position:absolute;inset:0;pointer-events:none;z-index:1;}
+
+.hero-content{position:relative;z-index:10;max-width:820px;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);padding:5px 16px;border-radius:100px;font-size:.63rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:28px;animation:fadeUp .5s ease both;}
+.live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 1.4s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.15;}}
+.hero h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2.8rem,7vw,6.5rem);line-height:1;letter-spacing:-2px;animation:fadeUp .5s .08s ease both;}
+.hero h1 em{color:var(--accent);font-style:normal;}
+.hero-sub{font-family:'Lora',serif;font-style:italic;font-size:clamp(.9rem,1.6vw,1.2rem);color:var(--light);margin:20px 0 32px;line-height:1.8;max-width:560px;animation:fadeUp .5s .16s ease both;}
+.hero-meta{display:flex;flex-wrap:wrap;gap:24px;margin-bottom:40px;animation:fadeUp .5s .24s ease both;}
+.hero-meta span{font-size:.68rem;color:var(--muted);}
+.hero-meta span b{color:var(--accent);}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap;animation:fadeUp .5s .32s ease both;}
+.btn-p{padding:13px 32px;background:var(--accent);color:#000;font-family:'Syne',sans-serif;font-weight:700;font-size:.72rem;letter-spacing:2px;text-transform:uppercase;text-decoration:none;transition:all .2s;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));}
+.btn-p:hover{background:var(--green);transform:translateY(-2px);}
+.btn-o{padding:13px 32px;background:transparent;color:var(--accent);font-family:'Syne',sans-serif;font-weight:700;font-size:.72rem;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border:1px solid var(--accent);transition:all .2s;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));}
+.btn-o:hover{background:rgba(0,212,255,.08);transform:translateY(-2px);}
+.hero-scroll{position:absolute;bottom:36px;left:56px;z-index:10;display:flex;align-items:center;gap:10px;font-size:.62rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+.scroll-bar{width:36px;height:1px;background:linear-gradient(90deg,var(--accent),transparent);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+
+.sec{padding:90px 56px;max-width:1160px;margin:0 auto;}
+.sec-label{display:flex;align-items:center;gap:14px;font-size:.62rem;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:48px;}
+.sec-label::after{content:'';flex:1;max-width:180px;height:1px;background:linear-gradient(90deg,var(--accent),transparent);}
+.sec-h{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.8rem,3.5vw,3rem);letter-spacing:-1px;line-height:1.1;margin-bottom:12px;}
+.sec-h em{color:var(--accent);font-style:normal;}
+
+.about-wrap{display:grid;grid-template-columns:1fr 400px;gap:72px;align-items:start;}
+.about-p{font-size:.8rem;color:var(--light);line-height:1.9;margin-bottom:18px;}
+.tags{display:flex;flex-wrap:wrap;gap:9px;margin-top:28px;}
+.tag{padding:5px 14px;border:1px solid var(--border);border-radius:100px;font-size:.66rem;color:var(--light);transition:all .2s;cursor:default;}
+.tag:hover{border-color:var(--accent);color:var(--accent);}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.stat{border:1px solid var(--border);padding:22px 24px;background:var(--card);clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));position:relative;overflow:hidden;transition:border-color .3s;}
+.stat:hover{border-color:var(--accent);}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),transparent);}
+.stat-n{font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;color:var(--accent);line-height:1;}
+.stat-l{font-size:.62rem;color:var(--muted);letter-spacing:1px;margin-top:5px;text-transform:uppercase;}
+
+.skills-bg{background:var(--bg2);}
+.skills-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;}
+.skill-card{border:1px solid var(--border);padding:28px;background:var(--card);clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));transition:border-color .3s,transform .3s;}
+.skill-card:hover{border-color:var(--accent);transform:translateY(-4px);}
+.skill-icon{font-size:1.3rem;margin-bottom:14px;}
+.skill-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:16px;}
+.pills{display:flex;flex-wrap:wrap;gap:7px;}
+.pill{padding:3px 11px;background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.13);font-size:.65rem;color:var(--light);transition:all .2s;}
+.pill:hover{background:rgba(0,212,255,.12);color:var(--accent);}
+
+.timeline{padding-left:36px;position:relative;}
+.timeline::before{content:'';position:absolute;left:0;top:6px;bottom:0;width:1px;background:linear-gradient(180deg,var(--accent),transparent);}
+.t-item{position:relative;margin-bottom:56px;}
+.t-item::before{content:'';position:absolute;left:-40px;top:6px;width:8px;height:8px;background:var(--accent);border-radius:50%;box-shadow:0 0 10px var(--accent);}
+.t-date{font-size:.62rem;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:6px;}
+.t-role{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:3px;}
+.t-co{font-size:.72rem;color:var(--muted);margin-bottom:18px;}
+.t-list{list-style:none;}
+.t-list li{font-size:.76rem;color:var(--light);line-height:1.75;margin-bottom:8px;padding-left:18px;position:relative;}
+.t-list li::before{content:'▸';position:absolute;left:0;color:var(--accent);}
+
+.proj-bg{background:var(--bg2);}
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;}
+.proj-card{border:1px solid var(--border);padding:32px;background:var(--card);position:relative;overflow:hidden;clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px));transition:border-color .3s,transform .3s;}
+.proj-card:hover{border-color:var(--accent2);transform:translateY(-5px);}
+.proj-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent2),var(--accent));}
+.proj-num{position:absolute;top:14px;right:20px;font-family:'Syne',sans-serif;font-size:2.6rem;font-weight:800;color:rgba(123,97,255,.1);line-height:1;}
+.proj-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:14px;max-width:80%;}
+.proj-desc{font-size:.73rem;color:var(--light);line-height:1.8;margin-bottom:20px;}
+.proj-tags{display:flex;flex-wrap:wrap;gap:7px;}
+.proj-tag{padding:3px 10px;background:rgba(123,97,255,.08);border:1px solid rgba(123,97,255,.18);font-size:.62rem;color:var(--accent2);}
+
+.edu-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+.edu-card{border:1px solid var(--border);padding:36px;background:var(--card);position:relative;overflow:hidden;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));transition:border-color .3s;}
+.edu-card:hover{border-color:var(--accent);}
+.edu-bar{position:absolute;top:0;left:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--accent),transparent);}
+.edu-deg{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:7px;}
+.edu-uni{font-size:.72rem;color:var(--accent);margin-bottom:5px;}
+.edu-date{font-size:.62rem;color:var(--muted);letter-spacing:1px;margin-bottom:16px;}
+.edu-body{font-size:.73rem;color:var(--light);line-height:1.8;}
+.grade{display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:5px 12px;background:rgba(0,255,157,.07);border:1px solid rgba(0,255,157,.18);font-size:.68rem;color:var(--green);}
+
+.lang-row{display:flex;gap:18px;flex-wrap:wrap;margin-top:48px;}
+.lang-card{flex:1;min-width:150px;text-align:center;border:1px solid var(--border);padding:24px 20px;background:var(--card);clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));transition:border-color .3s;}
+.lang-card:hover{border-color:var(--accent);}
+.lang-n{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;margin-bottom:6px;}
+.lang-l{font-size:.62rem;color:var(--accent);letter-spacing:2px;text-transform:uppercase;}
+.lang-dots{display:flex;gap:5px;justify-content:center;margin-top:12px;}
+.ld{width:7px;height:7px;border-radius:50%;background:var(--border);}
+.ld.on{background:var(--accent);box-shadow:0 0 5px var(--accent);}
+
+.contact-wrap{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);text-align:center;}
+.contact-inner{display:flex;flex-direction:column;align-items:center;padding:90px 56px;}
+.contact-h{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2rem,5vw,3.8rem);letter-spacing:-1px;margin-bottom:14px;}
+.contact-h em{color:var(--accent);font-style:normal;}
+.contact-sub{font-size:.76rem;color:var(--muted);max-width:460px;line-height:1.8;margin-bottom:40px;}
+.contact-links{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-bottom:40px;}
+.c-link{display:flex;align-items:center;gap:9px;padding:12px 24px;border:1px solid var(--border);color:var(--light);text-decoration:none;font-size:.7rem;transition:all .2s;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));}
+.c-link:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.05);}
+
+footer{padding:28px 56px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.f-copy{font-size:.62rem;color:var(--muted);letter-spacing:1px;}
+.f-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.75rem;color:var(--accent);letter-spacing:3px;}
+
+@media(max-width:900px){
+  nav{padding:14px 22px;}.nav-links{display:none;}
+  .hero{padding:100px 22px 70px;}.hero-scroll{left:22px;}
+  .sec{padding:70px 22px;}
+  .about-wrap{grid-template-columns:1fr;}
+  .edu-grid{grid-template-columns:1fr;}
+  footer{padding:22px;}
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-logo">RJ</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#education">Education</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<div class="hero" id="heroSection">
+  <div class="hero-bg"></div>
+  <div class="hero-ga"></div>
+  <div class="hero-gb"></div>
+  <canvas id="robotCanvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-badge"><span class="live-dot"></span>Open to Opportunities &middot; Erlangen, Germany</div>
+    <h1>Rohit<br><em>Jadhav</em></h1>
+    <p class="hero-sub">Robotics &amp; AI Engineer &mdash; turning control theory and machine learning into real working systems, from collaborative robot arms to neural networks.</p>
+    <div class="hero-meta">
+      <span><b>&#9899;</b> MSc Autonomy Technologies &middot; FAU Erlangen</span>
+      <span><b>&#9899;</b> Grade 1.9 &middot; Robotics &amp; AI</span>
+      <span><b>&#9899;</b> German: B1/B2</span>
+    </div>
+    <div class="hero-btns">
+      <a href="#contact" class="btn-p">Hire Me</a>
+      <a href="#projects" class="btn-o">See My Work</a>
+    </div>
+  </div>
+  <div class="hero-scroll"><div class="scroll-bar"></div>Scroll to explore</div>
+</div>
+
+<div id="about">
+  <div class="sec">
+    <div class="sec-label">01 &mdash; About Me</div>
+    <div class="about-wrap">
+      <div>
+        <h2 class="sec-h">Building machines that<br><em>think &amp; act</em></h2><br>
+        <p class="about-p">I'm Rohit &mdash; an international student from India, currently pursuing my MSc in Autonomy Technologies at FAU Erlangen-N&uuml;rnberg, one of Germany's top technical universities. My focus is Robotics and AI, working at the intersection of control theory, machine learning, and real hardware.</p>
+        <p class="about-p">My hands-on experience ranges from torque-controlling a 7-DoF Franka Emika robot arm in the lab, to building CNN-based plant disease detection systems that help farmers. I love turning complex technical ideas into real, working solutions.</p>
+        <p class="about-p">Actively seeking internship or working student roles in Robotics, AI, or Data Science across Germany &mdash; ready to relocate.</p>
+        <div class="tags">
+          <span class="tag">&#129374; Robot Programming</span>
+          <span class="tag">&#129504; AI &amp; ML Research</span>
+          <span class="tag">&#128202; Data Storytelling</span>
+          <span class="tag">&#127757; International Mindset</span>
+          <span class="tag">&#128295; Hands-on Builder</span>
+          <span class="tag">&#128218; Lifelong Learner</span>
+          <span class="tag">&#127919; Detail-Oriented</span>
+          <span class="tag">&#127807; Problem Solver</span>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-n">1.9</div><div class="stat-l">Current Grade</div></div>
+        <div class="stat"><div class="stat-n">3+</div><div class="stat-l">Internships</div></div>
+        <div class="stat"><div class="stat-n">87%</div><div class="stat-l">CNN Accuracy</div></div>
+        <div class="stat"><div class="stat-n">10K+</div><div class="stat-l">Data Entries</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="skills" class="skills-bg">
+  <div class="sec">
+    <div class="sec-label">02 &mdash; Technical Skills</div>
+    <h2 class="sec-h">My <em>Toolkit</em></h2><br><br>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <div class="skill-icon">&#9881;&#65039;</div>
+        <div class="skill-title">Programming &amp; Simulation</div>
+        <div class="pills"><span class="pill">Python</span><span class="pill">C++</span><span class="pill">MATLAB</span><span class="pill">Simulink</span><span class="pill">ROS2</span><span class="pill">System Modeling</span></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">&#129504;</div>
+        <div class="skill-title">ML &amp; Computer Vision</div>
+        <div class="pills"><span class="pill">Machine Learning</span><span class="pill">CNNs</span><span class="pill">PyTorch</span><span class="pill">TensorFlow</span><span class="pill">OpenCV</span><span class="pill">Anomaly Detection</span></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">&#129374;</div>
+        <div class="skill-title">Robotics &amp; Control</div>
+        <div class="pills"><span class="pill">PD/PID Control</span><span class="pill">Impedance Control</span><span class="pill">MPC</span><span class="pill">LQR Design</span><span class="pill">Franka Emika</span><span class="pill">State-Space</span></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">&#128202;</div>
+        <div class="skill-title">Data &amp; Analytics</div>
+        <div class="pills"><span class="pill">Power BI</span><span class="pill">SQL</span><span class="pill">EDA</span><span class="pill">Feature Engineering</span><span class="pill">Git</span><span class="pill">Salesforce</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="experience">
+  <div class="sec">
+    <div class="sec-label">03 &mdash; Experience</div>
+    <h2 class="sec-h">Where I've <em>Worked</em></h2><br><br>
+    <div class="timeline">
+      <div class="t-item">
+        <div class="t-date">Oct 2025 &mdash; Present</div>
+        <div class="t-role">Student Assistant &mdash; Robotics &amp; Control Lab</div>
+        <div class="t-co">FAU Erlangen &middot; Erlangen, Germany</div>
+        <ul class="t-list">
+          <li>Implemented joint-space and Cartesian-space torque control on a 7-DoF Franka Emika collaborative robot using real-time interfaces.</li>
+          <li>Designed and validated PD, PID, impedance, and hybrid force/motion controllers, analysing stability, damping, and tracking performance.</li>
+          <li>Applied model-based robot dynamics (inertia, Coriolis, gravity) to compare decentralised and centralised control strategies.</li>
+          <li>Designed and implemented Model Predictive Control (MPC) for constrained systems &mdash; modelling, discretisation, and tuning.</li>
+          <li>Implemented digital state-space control including discrete-time modelling, LQR design, and experimental verification.</li>
+        </ul>
+      </div>
+      <div class="t-item">
+        <div class="t-date">Nov 2024 &mdash; May 2025</div>
+        <div class="t-role">Data Analytics Intern</div>
+        <div class="t-co">Oorrmi Perfumes &middot; Remote</div>
+        <ul class="t-list">
+          <li>Cleaned and structured large customer datasets to uncover buying patterns and product preferences.</li>
+          <li>Built a Power BI dashboard (10,000+ entries) consolidating key trends, filters, and comparisons into one view.</li>
+          <li>Identified high-value customer segments, improving marketing targeting accuracy by approximately 20%.</li>
+          <li>Translated complex data into clear visuals and short summaries for non-technical stakeholders.</li>
+        </ul>
+      </div>
+      <div class="t-item">
+        <div class="t-date">Jan 2022 &mdash; Feb 2022</div>
+        <div class="t-role">Machine Learning &amp; OpenCV Intern</div>
+        <div class="t-co">GB Softronics &middot; Nashik, India</div>
+        <ul class="t-list">
+          <li>Built an AI anomaly detection system with Python and OpenCV, improving detection accuracy by 35%.</li>
+          <li>Designed image processing pipelines for Plant Leaf Disease Detection using ML and computer vision.</li>
+          <li>Applied PyTorch and TensorFlow to deliver real-time performance ML solutions.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="projects" class="proj-bg">
+  <div class="sec">
+    <div class="sec-label">04 &mdash; Projects</div>
+    <h2 class="sec-h">Things I've <em>Built</em></h2><br><br>
+    <div class="proj-grid">
+      <div class="proj-card">
+        <div class="proj-num">01</div>
+        <div class="proj-title">Plant Leaf Disease Detection &mdash; Bachelor's Thesis</div>
+        <div class="proj-desc">Trained CNNs achieving 87% classification accuracy on 5,000+ images with data augmentation. Built a Python GUI for farmers to upload leaf photos and get instant predictions. Published in an international journal.</div>
+        <div class="proj-tags"><span class="proj-tag">CNN</span><span class="proj-tag">PyTorch</span><span class="proj-tag">TensorFlow</span><span class="proj-tag">OpenCV</span><span class="proj-tag">Published</span></div>
+      </div>
+      <div class="proj-card">
+        <div class="proj-num">02</div>
+        <div class="proj-title">7-DoF Robot Arm Control &mdash; FAU Lab</div>
+        <div class="proj-desc">Implemented and validated PD, PID, impedance and MPC controllers on a real Franka Emika robot. Analysed stability and tracking under varying disturbances using model-based dynamics.</div>
+        <div class="proj-tags"><span class="proj-tag">Robotics</span><span class="proj-tag">MPC</span><span class="proj-tag">ROS2</span><span class="proj-tag">MATLAB</span><span class="proj-tag">Control Theory</span></div>
+      </div>
+      <div class="proj-card">
+        <div class="proj-num">03</div>
+        <div class="proj-title">Customer Analytics Dashboard</div>
+        <div class="proj-desc">Built a Power BI dashboard from 10,000+ customer records. Identified high-value segments improving targeting accuracy by 20%. Delivered visual summaries enabling quick data-driven decisions.</div>
+        <div class="proj-tags"><span class="proj-tag">Power BI</span><span class="proj-tag">SQL</span><span class="proj-tag">EDA</span><span class="proj-tag">Data Analytics</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="education">
+  <div class="sec">
+    <div class="sec-label">05 &mdash; Education</div>
+    <h2 class="sec-h">Academic <em>Background</em></h2><br><br>
+    <div class="edu-grid">
+      <div class="edu-card">
+        <div class="edu-bar"></div>
+        <div class="edu-deg">MSc Autonomy Technologies</div>
+        <div class="edu-uni">FAU Erlangen-N&uuml;rnberg &middot; Germany</div>
+        <div class="edu-date">April 2024 &mdash; April 2027 (Expected)</div>
+        <div class="edu-body">Major: Robotics and AI. One of Germany's highest-ranked universities for engineering and technical sciences.</div>
+        <div class="grade">&#9889; Current Grade: 1.9</div>
+      </div>
+      <div class="edu-card">
+        <div class="edu-bar"></div>
+        <div class="edu-deg">B.Eng. Electronics &amp; Telecommunications</div>
+        <div class="edu-uni">Pune University &middot; India</div>
+        <div class="edu-date">June 2020 &mdash; June 2023</div>
+        <div class="edu-body">Major: Electronics and Computer Science. Top-ranked engineering university in India with strong foundations in embedded systems and programming.</div>
+        <div class="grade">&#9889; GPA 8.33/10 &middot; German Equiv: 1.83</div>
+      </div>
+    </div>
+    <div class="sec-label" style="margin-top:56px">Languages</div>
+    <div class="lang-row">
+      <div class="lang-card"><div class="lang-n">English</div><div class="lang-l">Native / Fluent</div><div class="lang-dots"><div class="ld on"></div><div class="ld on"></div><div class="ld on"></div><div class="ld on"></div><div class="ld on"></div></div></div>
+      <div class="lang-card"><div class="lang-n">German</div><div class="lang-l">B1 / B2</div><div class="lang-dots"><div class="ld on"></div><div class="ld on"></div><div class="ld on"></div><div class="ld"></div><div class="ld"></div></div></div>
+      <div class="lang-card"><div class="lang-n">Hindi</div><div class="lang-l">Native</div><div class="lang-dots"><div class="ld on"></div><div class="ld on"></div><div class="ld on"></div><div class="ld on"></div><div class="ld on"></div></div></div>
+      <div class="lang-card"><div class="lang-n">Marathi</div><div class="lang-l">Native</div><div class="lang-dots"><div class="ld on"></div><div class="ld on"></div><div class="ld on"></div><div class="ld on"></div><div class="ld on"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<div id="contact" class="contact-wrap">
+  <div class="contact-inner">
+    <div class="sec-label">06 &mdash; Contact</div>
+    <div class="contact-h">Let's <em>work</em><br>together</div>
+    <p class="contact-sub">Actively seeking internship or working student roles in Robotics, AI, or Data Science across Germany. I respond fast &mdash; let's talk.</p>
+    <div class="contact-links">
+      <a href="mailto:jadhavrohit.work@gmail.com" class="c-link">&#128231; jadhavrohit.work@gmail.com</a>
+      <a href="tel:+4915566080007" class="c-link">&#128222; +49 1556 6080 007</a>
+      <a href="#" class="c-link">&#128205; Erlangen, Germany &middot; Open to Relocation</a>
+    </div>
+    <a href="mailto:jadhavrohit.work@gmail.com" class="btn-p">Send Me a Message</a>
+  </div>
+</div>
+
+<footer>
+  <div class="f-copy">&copy; 2025 Rohit Jadhav &middot; Erlangen, Germany</div>
+  <div class="f-name">ROHIT JADHAV</div>
+</footer>
+
+<script>
+window.addEventListener('scroll',function(){
+  document.getElementById('nav').classList.toggle('scrolled',window.scrollY>50);
+});
+
+(function(){
+  var canvas=document.getElementById('robotCanvas');
+  var ctx=canvas.getContext('2d');
+  var hero=document.getElementById('heroSection');
+  var W=0,H=0;
+
+  function resize(){
+    W=canvas.width=hero.offsetWidth;
+    H=canvas.height=hero.offsetHeight;
+    canvas.style.width=W+'px';
+    canvas.style.height=H+'px';
+  }
+  resize();
+  window.addEventListener('resize',resize);
+
+  var mx=null,my=null;
+  hero.addEventListener('mousemove',function(e){
+    var r=canvas.getBoundingClientRect();
+    mx=e.clientX-r.left; my=e.clientY-r.top;
+  });
+  hero.addEventListener('mouseleave',function(){mx=null;my=null;});
+
+  var L=[130,110,75];
+  var JR=[11,8,6];
+  var LW=[11,8,6];
+  var a1=-1.9,a2=-0.8,a3=-0.4;
+  var idleT=0;
+
+  function ik(bx,by,tx,ty,l1,l2){
+    var dx=tx-bx,dy=ty-by;
+    var d=Math.hypot(dx,dy);
+    d=Math.min(d,l1+l2-2);
+    var c2=(d*d-l1*l1-l2*l2)/(2*l1*l2);
+    var A2=-Math.acos(Math.max(-1,Math.min(1,c2)));
+    var k1=l1+l2*Math.cos(A2),k2=l2*Math.sin(A2);
+    var A1=Math.atan2(dy,dx)-Math.atan2(k2,k1);
+    return{a1:A1,a2:A2};
+  }
+
+  function lerpA(a,b,t){
+    var d=b-a;
+    while(d>Math.PI)d-=2*Math.PI;
+    while(d<-Math.PI)d+=2*Math.PI;
+    return a+d*t;
+  }
+
+  var trail=[];
+  var sparks=[];
+  function spk(x,y){
+    if(Math.random()>.15)return;
+    sparks.push({x:x,y:y,vx:(Math.random()-.5)*2.5,vy:(Math.random()-.5)*2.5-1,life:1,sz:Math.random()*2.5+.8});
+  }
+
+  function drawLink(x1,y1,x2,y2,w,col){
+    ctx.save();ctx.globalAlpha=.14;ctx.shadowColor=col;ctx.shadowBlur=22;
+    ctx.strokeStyle=col;ctx.lineWidth=w+8;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.restore();
+    ctx.save();ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='round';
+    ctx.shadowColor=col;ctx.shadowBlur=9;
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.restore();
+    ctx.save();ctx.strokeStyle='rgba(255,255,255,.16)';ctx.lineWidth=1.5;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.restore();
+  }
+
+  function drawJoint(x,y,r,col){
+    ctx.save();
+    ctx.shadowColor=col;ctx.shadowBlur=18;ctx.strokeStyle=col;ctx.lineWidth=1.8;
+    ctx.beginPath();ctx.arc(x,y,r+4,0,Math.PI*2);ctx.stroke();
+    var g=ctx.createRadialGradient(x-r*.3,y-r*.3,0,x,y,r);
+    g.addColorStop(0,'rgba(255,255,255,.28)');g.addColorStop(1,col+'88');
+    ctx.fillStyle=g;ctx.shadowBlur=10;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+
+  function drawGripper(x,y,angle,open){
+    var gap=10*open,len=20;
+    ctx.save();ctx.translate(x,y);ctx.rotate(angle+Math.PI/2);
+    ctx.strokeStyle='#00ff9d';ctx.lineWidth=4.5;ctx.lineCap='round';
+    ctx.shadowColor='#00ff9d';ctx.shadowBlur=12;
+    ctx.beginPath();ctx.moveTo(-gap/2-2,0);ctx.lineTo(gap/2+2,0);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-gap/2,0);ctx.lineTo(-gap/2-3,len);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(gap/2,0);ctx.lineTo(gap/2+3,len);ctx.stroke();
+    ctx.restore();
+  }
+
+  var gOpen=0,gDir=1,last=0;
+
+  function draw(ts){
+    var dt=Math.min((ts-last)/1000,.05);last=ts;
+    ctx.clearRect(0,0,W,H);
+
+    var bx=W*.8,by=H*.87;
+    var tx,ty;
+    if(mx!==null){tx=mx;ty=my;}
+    else{
+      idleT+=dt*.5;
+      tx=bx-190+Math.cos(idleT)*160;
+      ty=by-170+Math.sin(idleT*2)*70;
+    }
+
+    var ang2t=Math.atan2(ty-by,tx-bx);
+    var wx=tx-L[2]*.6*Math.cos(ang2t);
+    var wy=ty-L[2]*.6*Math.sin(ang2t);
+    var sol=ik(bx,by,wx,wy,L[0],L[1]);
+    a1=lerpA(a1,sol.a1,.09);
+    a2=lerpA(a2,sol.a2,.09);
+
+    var j1x=bx+L[0]*Math.cos(a1),j1y=by+L[0]*Math.sin(a1);
+    var j2x=j1x+L[1]*Math.cos(a1+a2),j2y=j1y+L[1]*Math.sin(a1+a2);
+    var wt=Math.atan2(ty-j2y,tx-j2x)-(a1+a2);
+    a3=lerpA(a3,wt,.1);
+    var ta=a1+a2+a3;
+    var j3x=j2x+L[2]*Math.cos(ta),j3y=j2y+L[2]*Math.sin(ta);
+
+    trail.push({x:j3x,y:j3y});
+    if(trail.length>30)trail.shift();
+    for(var i=1;i<trail.length;i++){
+      var p=i/trail.length;
+      ctx.save();ctx.globalAlpha=p*.38;ctx.strokeStyle='#00d4ff';ctx.lineWidth=p*2.5;
+      ctx.shadowColor='#00d4ff';ctx.shadowBlur=6;
+      ctx.beginPath();ctx.moveTo(trail[i-1].x,trail[i-1].y);ctx.lineTo(trail[i].x,trail[i].y);ctx.stroke();
+      ctx.restore();
+    }
+
+    spk(j3x,j3y);
+    for(var i=sparks.length-1;i>=0;i--){
+      var s=sparks[i];
+      s.x+=s.vx;s.y+=s.vy;s.vy+=.1;s.life-=.05;
+      if(s.life<=0){sparks.splice(i,1);continue;}
+      ctx.save();ctx.globalAlpha=s.life*.82;
+      ctx.fillStyle=s.life>.5?'#00ff9d':'#00d4ff';
+      ctx.shadowColor='#00ff9d';ctx.shadowBlur=7;
+      ctx.beginPath();ctx.arc(s.x,s.y,s.sz*s.life,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    }
+
+    ctx.save();ctx.translate(bx,by);
+    ctx.shadowColor='#7b61ff';ctx.shadowBlur=20;
+    ctx.fillStyle='#1a1f2e';ctx.strokeStyle='#7b61ff';ctx.lineWidth=2;
+    ctx.beginPath();ctx.rect(-22,-11,44,22);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#7b61ff';ctx.shadowBlur=8;
+    ctx.beginPath();ctx.arc(0,0,5,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+
+    drawLink(bx,by,j1x,j1y,LW[0],'#7b61ff');
+    drawLink(j1x,j1y,j2x,j2y,LW[1],'#00d4ff');
+    drawLink(j2x,j2y,j3x,j3y,LW[2],'#00ff9d');
+    drawJoint(bx,by,JR[0],'#7b61ff');
+    drawJoint(j1x,j1y,JR[1],'#00d4ff');
+    drawJoint(j2x,j2y,JR[2],'#00ff9d');
+
+    gOpen+=dt*gDir*1.1;
+    if(gOpen>=1){gOpen=1;gDir=-1;}
+    if(gOpen<=0){gOpen=0;gDir=1;}
+    drawGripper(j3x,j3y,ta,gOpen);
+
+    ctx.save();ctx.globalAlpha=.28;ctx.fillStyle='#00d4ff';
+    ctx.font='11px monospace';ctx.textAlign='right';
+    var hx=W-18,hy=H-78;
+    ctx.fillText('t1 '+(a1*180/Math.PI).toFixed(1)+'deg',hx,hy);
+    ctx.fillText('t2 '+(a2*180/Math.PI).toFixed(1)+'deg',hx,hy+16);
+    ctx.fillText('t3 '+(a3*180/Math.PI).toFixed(1)+'deg',hx,hy+32);
+    ctx.restore();
+
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
